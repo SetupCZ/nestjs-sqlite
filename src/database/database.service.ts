@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import * as SQliteDatabase from 'better-sqlite3';
 import { ConfigService } from '@nestjs/config';
 import { TConfigService } from '../config/config';
-import { DbContext, IDatabaseService } from './database.interface';
+import { IDatabaseService, DbContext } from './database.interface';
 
 @Injectable()
 export class DatabaseService implements IDatabaseService {
@@ -18,6 +18,6 @@ export class DatabaseService implements IDatabaseService {
 
     const sqlite = new SQliteDatabase(connectionString);
 
-    this.context = drizzle(sqlite);
+    this.context = drizzle(sqlite, { logger: true });
   }
 }

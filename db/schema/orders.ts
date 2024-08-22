@@ -1,7 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
-export type OrderStatus = 'pending' | 'inactive' | 'completed';
+export const orderStatusOptions = ['pending', 'inactive', 'completed'] as const;
+export type OrderStatus = (typeof orderStatusOptions)[number];
 
 export const orders = sqliteTable('orders', {
   id: text('id').notNull().primaryKey(),
@@ -9,7 +10,7 @@ export const orders = sqliteTable('orders', {
   createTimestamp: integer('create_timestamp', { mode: 'timestamp_ms' })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  updateTimestamp: integer('update_timestamp', {mode: 'timestamp_ms'})
+  updateTimestamp: integer('update_timestamp', { mode: 'timestamp_ms' })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
   status: text('status').$type<OrderStatus>().notNull().default('pending'),

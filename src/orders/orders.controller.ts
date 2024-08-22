@@ -3,14 +3,19 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { Order } from './entities/order.entity';
+import { ApiNotFoundResponse, ApiResponse } from '@nestjs/swagger';
 import { TUuid, UuidParam } from '../uuid';
 
 @Controller('orders')
@@ -18,31 +23,43 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
+  @HttpCode(HttpStatus.CREATED)
+  @ApiResponse({ status: HttpStatus.CREATED, description: 'Order created' })
+  create(
+    @Body(new ValidationPipe()) createOrderDto: CreateOrderDto,
+  ): Promise<TUuid> {
     return this.ordersService.create(createOrderDto);
   }
 
   @Get()
-  findAll() {
+  @ApiResponse({ status: HttpStatus.OK, type: Order, isArray: true })
+  findAll(): Promise<Order[]> {
     return this.ordersService.findAll();
   }
 
   @Get(':id')
+  @ApiResponse({ status: HttpStatus.OK, type: Order })
+  @ApiNotFoundResponse({ description: 'Order not found' })
   @UuidParam()
-  findOne(@Param('id', ParseUUIDPipe) id: TUuid) {
+  findOne(@Param('id', ParseUUIDPipe) id: TUuid): Promise<Order> {
     return this.ordersService.findOne(id);
   }
 
   @Patch(':id')
+  @ApiResponse({ status: HttpStatus.OK })
+  @ApiNotFoundResponse({ description: 'Order not found' })
   @UuidParam()
   update(
     @Param('id', ParseUUIDPipe) id: TUuid,
-    @Body() updateOrderDto: UpdateOrderDto,
-  ) {
+    @Body(new ValidationPipe()) updateOrderDto: UpdateOrderDto,
+  ): Promise<void> {
     return this.ordersService.update(id, updateOrderDto);
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiResponse({ status: HttpStatus.NO_CONTENT })
+  @ApiNotFoundResponse({ description: 'Order not found' })
   @UuidParam()
   remove(@Param('id', ParseUUIDPipe) id: TUuid) {
     return this.ordersService.remove(id);

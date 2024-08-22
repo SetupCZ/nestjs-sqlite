@@ -5,6 +5,6 @@ export default defineConfig({
   out: './db',
   dialect: 'sqlite',
   dbCredentials: {
-    url: process.env.DATABASE_CONNECTION_STRING,
+    url: process.env.DATABASE_CONNECTION_STRING!,
   },
 });
