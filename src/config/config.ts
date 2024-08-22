@@ -5,17 +5,27 @@ class ConfigSchema {
   constructor(config: Record<string, unknown>) {
     this.DATABASE_CONNECTION_STRING =
       config.DATABASE_CONNECTION_STRING as string;
+
+    this.JWT_SECRET_KEY = config.JWT_SECRET_KEY as string;
+
+    this.JWT_EXPIRES_IN = (config.JWT_EXPIRES_IN as string) ?? '60m';
   }
 
   @IsNotEmpty()
   public readonly DATABASE_CONNECTION_STRING: string;
+
+  @IsNotEmpty()
+  public readonly JWT_SECRET_KEY: string;
+
+  @IsNotEmpty()
+  public readonly JWT_EXPIRES_IN: string;
 }
 
 export type TConfigService = ConfigService<ConfigSchema, true>;
 
-export const validateConfig = async (
+export const validateConfig =  (
   config: Record<string, unknown>,
-): Promise<ConfigSchema> => {
+): ConfigSchema => {
   const configSchema = new ConfigSchema(config);
   const validationErrors = validateSync(configSchema);
 

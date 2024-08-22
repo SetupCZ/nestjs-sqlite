@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { validateConfig } from './config/config';
 import { DateModule } from './date';
 import { UuidModule } from './uuid';
+import { AuthModule } from './auth';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UuidModule } from './uuid';
     DateModule,
     OrdersModule,
     DatabaseModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
