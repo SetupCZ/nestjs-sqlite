@@ -1,0 +1,16 @@
+services:
+  server:
+    command: [sh, -c, 'yarn start:dev']
+    build:
+      context: .
+      target: dev
+    working_dir: /usr/src/app
+    environment:
+      NODE_ENV: development
+      DATABASE_CONNECTION_STRING: app.db
+      JWT_SECRET_KEY: secret
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/usr/src/app:delegated
+      - /usr/src/app/node_modules
