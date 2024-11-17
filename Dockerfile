@@ -43,7 +43,7 @@ CMD [""]
 
 ################################################################################
 # Create a stage for building the application.
-FROM deps AS build
+FROM dev AS build
 # Copy the rest of the source files into the image.
 COPY . .
 # Run the build script.
