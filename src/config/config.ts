@@ -3,6 +3,8 @@ import { IsNotEmpty, validateSync } from 'class-validator';
 
 class ConfigSchema {
   constructor(config: Record<string, unknown>) {
+    this.ENVIRONMENT = (config.ENVIRONMENT as string) ?? 'development';
+
     this.DATABASE_CONNECTION_STRING =
       config.DATABASE_CONNECTION_STRING as string;
 
@@ -10,6 +12,9 @@ class ConfigSchema {
 
     this.JWT_EXPIRES_IN = (config.JWT_EXPIRES_IN as string) ?? '60m';
   }
+
+  @IsNotEmpty()
+  public readonly ENVIRONMENT: string;
 
   @IsNotEmpty()
   public readonly DATABASE_CONNECTION_STRING: string;
@@ -23,7 +28,7 @@ class ConfigSchema {
 
 export type TConfigService = ConfigService<ConfigSchema, true>;
 
-export const validateConfig =  (
+export const validateConfig = (
   config: Record<string, unknown>,
 ): ConfigSchema => {
   const configSchema = new ConfigSchema(config);

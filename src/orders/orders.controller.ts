@@ -23,6 +23,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TUuid, UuidParam } from '../uuid';
+import { Span } from 'nestjs-otel';
+import { InjectLogger, TLogger } from '../logger';
+import { Histogram, InjectHistogram } from '../metric';
 import { JwtAuthGuard } from '../auth';
 
 @UseGuards(JwtAuthGuard)
@@ -30,11 +33,18 @@ import { JwtAuthGuard } from '../auth';
 @ApiTags('Orders')
 @Controller('orders')
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    private readonly ordersService: OrdersService,
+    @InjectLogger(OrdersController)
+    private readonly logger: TLogger,
+    @InjectHistogram('FIND_ALL_ORDERS_DURATION')
+    private readonly findAllOrdersHistogram: Histogram,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Order created' })
+  @Span('create-order')
   create(
     @Body(new ValidationPipe()) createOrderDto: CreateOrderDto,
   ): Promise<TUuid> {
@@ -43,8 +53,14 @@ export class OrdersController {
 
   @Get()
   @ApiResponse({ status: HttpStatus.OK, type: Order, isArray: true })
+  @Span('find-all-orders')
   findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+    this.logger.info({ data: 'test' }, 'Find all orders');
+    const stopTimer = this.findAllOrdersHistogram.startTimer();
+
+    return this.ordersService.findAll().finally(() => {
+      stopTimer();
+    });
   }
 
   @Get(':id')
