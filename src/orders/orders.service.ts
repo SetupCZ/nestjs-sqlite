@@ -1,12 +1,13 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { IDatabaseService, DATABASE } from '../database';
+import { DATABASE, IDatabaseService } from '../database';
 import { orders } from '../../db/schema';
 import { Order } from './entities/order.entity';
 import { eq, ne } from 'drizzle-orm';
 import { IUuidService, TUuid, UUID } from '../uuid';
 import { DATE, IDateService } from '../date';
+import { Span } from 'nestjs-otel';
 
 @Injectable()
 export class OrdersService {
@@ -27,6 +28,7 @@ export class OrdersService {
     return id;
   }
 
+  @Span('find-all-orders-database-call')
   findAll(): Promise<Order[]> {
     return this.database.context
       .select()

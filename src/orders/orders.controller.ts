@@ -23,6 +23,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { TUuid, UuidParam } from '../uuid';
+import { OtelHistogram, Span } from 'nestjs-otel';
+import { Histogram } from '@opentelemetry/api';
 import { JwtAuthGuard } from '../auth';
 
 @UseGuards(JwtAuthGuard)
@@ -35,6 +37,7 @@ export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiResponse({ status: HttpStatus.CREATED, description: 'Order created' })
+  @Span('create-order')
   create(
     @Body(new ValidationPipe()) createOrderDto: CreateOrderDto,
   ): Promise<TUuid> {
@@ -43,8 +46,16 @@ export class OrdersController {
 
   @Get()
   @ApiResponse({ status: HttpStatus.OK, type: Order, isArray: true })
-  findAll(): Promise<Order[]> {
-    return this.ordersService.findAll();
+  @Span('find-all-orders')
+  findAll(
+    @OtelHistogram('find-all-orders') histogram: Histogram,
+  ): Promise<Order[]> {
+    const startTime = process.hrtime();
+    return this.ordersService.findAll().finally(() => {
+      const delta = process.hrtime(startTime);
+      const diff = delta[0] + delta[1] / 1e9;
+      histogram.record(diff, { status: 'success' });
+    });
   }
 
   @Get(':id')

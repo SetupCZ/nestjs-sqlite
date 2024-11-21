@@ -13,6 +13,7 @@ FROM node:${NODE_VERSION}-alpine AS base
 # Set working directory for all build stages.
 WORKDIR /usr/src/app
 
+ENV DATABASE_CONNECTION_STRING="app.db"
 
 ################################################################################
 # Create a stage for installing production dependecies.
@@ -39,7 +40,10 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     yarn install --frozen-lockfile
 
 
-CMD [""]
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=drizzle.config.ts,target=drizzle.config.ts \
+    --mount=type=bind,source=db,target=db \
+    yarn db:migrate --config drizzle.config.ts
 
 ################################################################################
 # Create a stage for building the application.
@@ -67,8 +71,9 @@ COPY package.json .
 # the built application from the build stage into the image.
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./
+COPY --from=dev /usr/src/app/app.db ./app.db
 
 # Expose the port that the application listens on.
 EXPOSE 3000
 
-#CMD ["node", "src/main.js"]
+CMD ["node", "src/main.js"]
